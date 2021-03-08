@@ -155,6 +155,8 @@ fun CountdownTimer() {
 
     fun reset() {
         degree = 0f
+        setSeconds("")
+        setMinutes("")
         shouldPlayRingTone = false
         setIsRingTonePlaying(false)
         if (getRingTone(context)?.isPlaying!!) {
@@ -281,7 +283,7 @@ fun ClockFaceRow(degree: Float, modifier: Modifier) {
             val radius = size.minDimension / 4
 
             drawCircle(
-                color = Color.Red,
+                color = Color.Black,
                 center = Offset(x = canvasWidth / 2, y = canvasHeight / 2),
                 radius = radius + 4,
                 alpha = 0.5f,
