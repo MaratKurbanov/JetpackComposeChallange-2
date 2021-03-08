@@ -67,7 +67,6 @@ import com.example.androiddevchallenge.ui.theme.MyTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-
 @ExperimentalAnimationApi
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -89,7 +88,7 @@ fun getRingTone(context: Context): Ringtone? {
         if (alarmUri == null) {
             alarmUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE)
         }
-        ringTone = RingtoneManager.getRingtone(context, alarmUri);
+        ringTone = RingtoneManager.getRingtone(context, alarmUri)
     }
 
     return ringTone
@@ -111,19 +110,19 @@ fun CountdownTimer() {
         .padding(10.dp)
 
     if (seconds.isNotEmpty()) {
-        degree = (seconds.toInt() * 6).toFloat();
+        degree = (seconds.toInt() * 6).toFloat()
         useSeconds = true
     } else if (minutes.isNotEmpty()) {
-        degree = (minutes.toInt() * 6).toFloat();
+        degree = (minutes.toInt() * 6).toFloat()
         useSeconds = false
     }
 
     fun startTimer() {
-        if(degree <= 0) return
+        if (degree <= 0) return
 
-        start = !start;
-        seconds = "";
-        minutes = "";
+        start = !start
+        seconds = ""
+        minutes = ""
         shouldPlayRingTone = true
 
         coroutineScope.launch {
@@ -187,7 +186,6 @@ fun CountdownTimer() {
                     modifier = rowModifier
                 )
             }
-
         }
     }
 }
@@ -333,9 +331,11 @@ fun UserInputRow(
                     textStyle = TextStyle(color = Color.Blue, fontWeight = FontWeight.Bold),
                     label = { Text("Seconds") },
                     modifier = buttonModifier,
-                    keyboardActions = KeyboardActions(onDone = {
-                        startTimer()
-                    })
+                    keyboardActions = KeyboardActions(
+                        onDone = {
+                            startTimer()
+                        }
+                    )
                 )
                 false -> OutlinedTextField(
                     value = minutes,
@@ -344,9 +344,11 @@ fun UserInputRow(
                     textStyle = TextStyle(color = Color.Blue, fontWeight = FontWeight.Bold),
                     label = { Text("Minutes") },
                     modifier = buttonModifier,
-                    keyboardActions = KeyboardActions(onDone = {
-                        startTimer()
-                    })
+                    keyboardActions = KeyboardActions(
+                        onDone = {
+                            startTimer()
+                        }
+                    )
                 )
             }
         }
@@ -366,7 +368,6 @@ fun UserInputRow(
             },
             Modifier.padding(top = 20.dp)
         )
-
     }
 }
 
@@ -425,7 +426,6 @@ fun ButtonRow(
                     true -> Text("Stop")
                 }
             }
-
         }
 
         val alpha: Float by animateFloatAsState(if (start) 0.5f else 1f)
