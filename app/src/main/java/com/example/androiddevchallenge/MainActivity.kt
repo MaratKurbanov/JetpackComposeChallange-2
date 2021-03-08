@@ -20,6 +20,7 @@ import android.media.Ringtone
 import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.AnimatedVisibility
@@ -37,12 +38,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.ExtendedFloatingActionButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -101,6 +104,7 @@ fun CountdownTimer() {
     var useSeconds by remember { mutableStateOf(true) }
     var start by remember { mutableStateOf(false) }
     var shouldPlayRingTone by remember { mutableStateOf(true) }
+    var (isRingRingTonePlaying, setIsRingTonePlaying) = remember { mutableStateOf(false) }
     var (seconds, setSeconds) = remember { mutableStateOf("") }
     var (minutes, setMinutes) = remember { mutableStateOf("") }
     val coroutineScope = rememberCoroutineScope()
@@ -127,11 +131,24 @@ fun CountdownTimer() {
 
         coroutineScope.launch {
             while (start) {
-                degree = updateDegree(degree, useSeconds, context, shouldPlayRingTone)
+                degree = updateDegree(
+                    degree,
+                    useSeconds,
+                    context,
+                )
+
                 delay(1000)
+
                 if (degree <= 0) {
                     start = false
                 }
+
+                if (degree == 0f && shouldPlayRingTone) {
+                    setIsRingTonePlaying(true)
+                    getRingTone(context)?.play()
+                }
+
+                Log.d("Marat", "marat: degree=$degree")
             }
         }
     }
@@ -139,6 +156,7 @@ fun CountdownTimer() {
     fun reset() {
         degree = 0f
         shouldPlayRingTone = false
+        setIsRingTonePlaying(false)
         if (getRingTone(context)?.isPlaying!!) {
             getRingTone(context)?.stop()
         }
@@ -150,6 +168,10 @@ fun CountdownTimer() {
                 .fillMaxWidth()
                 .padding(20.dp)
         ) {
+
+            AnimatedVisibility(visible = isRingRingTonePlaying) {
+                SnoozeDialog { reset() }
+            }
 
             AnimatedVisibility(visible = !start) {
                 UserInputRow(
@@ -190,23 +212,43 @@ fun CountdownTimer() {
     }
 }
 
+@Composable
+fun SnoozeDialog(onDismiss: () -> Unit) {
+    AlertDialog(
+        // title = { Text(text = "Snooze", fontSize = 25.sp, fontWeight = FontWeight.Bold) },
+        buttons = {
+            Row(modifier = Modifier) {
+                TextButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.padding(4.dp)
+                ) {
+                    Text(text = "Stop", fontSize = 25.sp, fontWeight = FontWeight.Bold)
+                }
+            }
+        },
+        onDismissRequest = onDismiss
+    )
+}
+
 fun updateDegree(
     deg: Float,
     useSeconds: Boolean,
-    context: Context,
-    shouldPlayRingTone: Boolean
+    context: Context
 ): Float {
-    if (deg <= 6) {
-        if (shouldPlayRingTone) {
-            getRingTone(context)?.play()
-        }
-        return 0f
-    }
 
     return if (useSeconds) {
-        deg - 6F
+        if (deg <= 6f) {
+            0f
+        } else {
+            deg - 6F
+        }
     } else {
-        deg - 0.1F
+
+        if (deg <= 0.1f) {
+            0f
+        } else {
+            deg - 0.1F
+        }
     }
 }
 
