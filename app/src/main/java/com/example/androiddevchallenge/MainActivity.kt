@@ -106,7 +106,7 @@ fun CountdownTimer() {
     var useSeconds by remember { mutableStateOf(true) }
     var start by remember { mutableStateOf(false) }
     var shouldPlayRingTone by remember { mutableStateOf(true) }
-    var (isRingRingTonePlaying, setIsRingTonePlaying) = remember { mutableStateOf(false) }
+    val (isRingRingTonePlaying, setIsRingTonePlaying) = remember { mutableStateOf(false) }
     var (seconds, setSeconds) = remember { mutableStateOf("") }
     var (minutes, setMinutes) = remember { mutableStateOf("") }
     val coroutineScope = rememberCoroutineScope()
@@ -136,7 +136,6 @@ fun CountdownTimer() {
                 degree = updateDegree(
                     degree,
                     useSeconds,
-                    context,
                 )
 
                 delay(1000)
@@ -237,7 +236,6 @@ fun SnoozeDialog(onDismiss: () -> Unit) {
 fun updateDegree(
     deg: Float,
     useSeconds: Boolean,
-    context: Context
 ): Float {
 
     return if (useSeconds) {
@@ -257,7 +255,7 @@ fun updateDegree(
 }
 
 fun parseNumeric(num: String): String {
-    if (num.length === 0) return ""
+    if (num.isEmpty()) return ""
 
     return when (val temp = num.toIntOrNull()) {
         null -> ""
@@ -434,7 +432,7 @@ fun SecondsDisplay(
     modifier: Modifier
 ) {
 
-    var time = if (useSeconds) {
+    val time = if (useSeconds) {
         ((degree / 6).toInt()).toString()
     } else {
         val timeLong = (degree / 0.1).toInt()
@@ -451,7 +449,7 @@ fun SecondsDisplay(
     }
 }
 
-@Preview()
+@Preview
 @Composable
 fun SecondsDisplayPreview() {
     val rowModifier = Modifier
