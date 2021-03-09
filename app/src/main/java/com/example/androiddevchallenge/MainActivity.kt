@@ -38,6 +38,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.AlertDialog
 import androidx.compose.material.Button
 import androidx.compose.material.ExtendedFloatingActionButton
@@ -63,6 +64,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -286,7 +288,6 @@ fun ClockFaceRow(degree: Float, modifier: Modifier) {
                 color = Color.Black,
                 center = Offset(x = canvasWidth / 2, y = canvasHeight / 2),
                 radius = radius + 4,
-                alpha = 0.5f,
                 style = Stroke(
                     width = 4f,
                 )
@@ -296,7 +297,7 @@ fun ClockFaceRow(degree: Float, modifier: Modifier) {
                 color = Color.Red,
                 center = Offset(x = canvasWidth / 2, y = canvasHeight / 2),
                 radius = radius,
-                alpha = 0.5f,
+                alpha = 0.7f,
             )
 
             withTransform({
@@ -367,32 +368,19 @@ fun UserInputRow(
 
         Crossfade(targetState = isSeconds) { screen ->
             when (screen) {
-                true -> OutlinedTextField(
-                    value = seconds,
-                    maxLines = 1,
-                    singleLine = true,
-                    onValueChange = { setSeconds(parseNumeric(it)) },
-                    textStyle = TextStyle(color = Color.Blue, fontWeight = FontWeight.Bold),
-                    label = { Text("Seconds") },
-                    modifier = buttonModifier,
-                    keyboardActions = KeyboardActions(
-                        onDone = {
-                            startTimer()
-                        }
-                    )
+                true -> NumberInputField(
+                    labelText = "Seconds",
+                    initialValue = seconds,
+                    onStart = startTimer,
+                    setValue = { setSeconds(parseNumeric(it)) },
+                    modifier = buttonModifier
                 )
-                false -> OutlinedTextField(
-                    value = minutes,
-                    singleLine = true,
-                    onValueChange = { setMinutes(parseNumeric(it)) },
-                    textStyle = TextStyle(color = Color.Blue, fontWeight = FontWeight.Bold),
-                    label = { Text("Minutes") },
-                    modifier = buttonModifier,
-                    keyboardActions = KeyboardActions(
-                        onDone = {
-                            startTimer()
-                        }
-                    )
+                false -> NumberInputField(
+                    labelText = "Minutes",
+                    initialValue = minutes,
+                    onStart = startTimer,
+                    setValue = { setMinutes(parseNumeric(it)) },
+                    modifier = buttonModifier
                 )
             }
         }
@@ -416,19 +404,43 @@ fun UserInputRow(
 }
 
 @Composable
+fun NumberInputField(
+    labelText: String,
+    initialValue: String,
+    onStart: () -> Unit,
+    setValue: (String) -> Unit,
+    modifier: Modifier
+) {
+    OutlinedTextField(
+        value = initialValue,
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        singleLine = true,
+        onValueChange = { setValue(parseNumeric(it)) },
+        textStyle = TextStyle(color = Color.Blue, fontWeight = FontWeight.Bold),
+        label = { Text(labelText) },
+        modifier = modifier,
+        keyboardActions = KeyboardActions(
+            onDone = {
+                onStart()
+            }
+        )
+    )
+}
+
+@Composable
 fun SecondsDisplay(
     degree: Float,
     useSeconds: Boolean,
     modifier: Modifier
 ) {
-    var time: String
-    if (useSeconds) {
-        time = ((degree / 6).toInt()).toString()
+
+    var time = if (useSeconds) {
+        ((degree / 6).toInt()).toString()
     } else {
         val timeLong = (degree / 0.1).toInt()
         val seconds = (timeLong % 3600) / 60
         val minutes = timeLong % 60
-        time = "$seconds : $minutes"
+        "$seconds : $minutes"
     }
 
     Row(
@@ -441,7 +453,7 @@ fun SecondsDisplay(
 
 @Preview()
 @Composable
-fun SecondsDispalyPreview() {
+fun SecondsDisplayPreview() {
     val rowModifier = Modifier
         .fillMaxWidth()
         .padding(10.dp)
