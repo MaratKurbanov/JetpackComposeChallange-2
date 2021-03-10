@@ -29,11 +29,11 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -65,6 +65,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -169,7 +170,8 @@ fun CountdownTimer() {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(20.dp)
+                .fillMaxHeight()
+                .padding(10.dp)
         ) {
 
             AnimatedVisibility(visible = isRingRingTonePlaying) {
@@ -189,10 +191,32 @@ fun CountdownTimer() {
             }
 
             AnimatedVisibility(visible = start) {
-                ClockFaceRow(
-                    degree = degree,
-                    modifier = rowModifier
-                )
+                Box(
+                    rowModifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    ClockFaceRow(
+                        degree = degree,
+                        modifier = rowModifier
+                    )
+
+                    SecondsDisplay(
+                        useSeconds = useSeconds,
+                        degree = degree
+                    )
+                }
+            }
+
+            AnimatedVisibility(visible = !start && degree > 0) {
+                Box(
+                    rowModifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    SecondsDisplay(
+                        useSeconds = useSeconds,
+                        degree = degree
+                    )
+                }
             }
 
             ButtonRow(
@@ -201,16 +225,6 @@ fun CountdownTimer() {
                 onClick = { startTimer() },
                 onReset = { reset() }
             )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            AnimatedVisibility(visible = degree > 0) {
-                SecondsDisplay(
-                    useSeconds = useSeconds,
-                    degree = degree,
-                    modifier = rowModifier
-                )
-            }
         }
     }
 }
@@ -269,65 +283,64 @@ fun parseNumeric(num: String): String {
     }
 }
 
+@Preview
+@Composable
+fun ClockFaceRowPreview() {
+    ClockFaceRow(300.5f, Modifier)
+}
+
 @Composable
 fun ClockFaceRow(degree: Float, modifier: Modifier) {
 
-    Column(modifier, horizontalAlignment = Alignment.CenterHorizontally) {
-        Canvas(
-            modifier = Modifier
-                .size(280.dp)
-                .padding(10.dp),
-        ) {
-            val canvasWidth = size.width
-            val canvasHeight = size.height
-            val radius = size.minDimension / 4
+    Canvas(
+        modifier = modifier
+            .size(300.dp)
+    ) {
+        val halfCanvasWidth = size.width / 2
+        val halfCanvasHeight = size.height / 2
+        val radius = size.minDimension / 2
 
-            drawCircle(
-                color = Color.Black,
-                center = Offset(x = canvasWidth / 2, y = canvasHeight / 2),
-                radius = radius + 4,
-                style = Stroke(
-                    width = 4f,
-                )
+        drawCircle(
+            color = Color.Black,
+            center = Offset(x = halfCanvasWidth, y = halfCanvasHeight),
+            radius = radius + 4,
+            style = Stroke(
+                width = 4f,
             )
+        )
 
-            drawCircle(
-                color = Color.Red,
-                center = Offset(x = canvasWidth / 2, y = canvasHeight / 2),
-                radius = radius,
-                alpha = 0.7f,
+        drawCircle(
+            color = Color.Red,
+            center = Offset(x = halfCanvasWidth, y = halfCanvasHeight),
+            radius = radius,
+        )
+
+        withTransform({
+            rotate(degrees = -90f)
+        }) {
+
+            drawArc(
+                color = Color.Blue,
+                alpha = 0.5f,
+                startAngle = 0f,
+                sweepAngle = degree,
+                useCenter = true,
             )
+        }
 
-            withTransform({
-                // translate(left = canvasWidth / 5F)
-                rotate(degrees = -90f)
-            }) {
-
-                drawArc(
-                    color = Color.Gray,
-                    size = size / 2f,
-                    topLeft = Offset(x = canvasWidth / 4, y = canvasHeight / 4),
-                    startAngle = 0f,
-                    sweepAngle = degree,
-                    useCenter = true
+        withTransform({
+            rotate(degrees = degree)
+        }) {
+            inset(50F, 50F) {
+                drawLine(
+                    color = Color.Black,
+                    start = Offset(x = halfCanvasWidth - 50, y = halfCanvasHeight - 50),
+                    end = Offset(
+                        x = halfCanvasWidth - 50,
+                        y = halfCanvasHeight - radius - 50
+                    ),
+                    strokeWidth = 5f,
                 )
-            }
-
-            withTransform({
-                // translate(left = canvasWidth / 5F)
-                rotate(degrees = degree)
-            }) {
-                inset(50F, 50F) {
-                    drawLine(
-                        color = Color.Black,
-                        start = Offset(x = canvasWidth / 2 - 50, y = canvasHeight / 2 - 50),
-                        end = Offset(
-                            x = canvasWidth / 2 - 50,
-                            y = (canvasHeight / 2) - radius - 50
-                        ),
-                        strokeWidth = 5f,
-                    )
-                }
             }
         }
     }
@@ -428,8 +441,7 @@ fun NumberInputField(
 @Composable
 fun SecondsDisplay(
     degree: Float,
-    useSeconds: Boolean,
-    modifier: Modifier
+    useSeconds: Boolean
 ) {
 
     val time = if (useSeconds) {
@@ -438,25 +450,23 @@ fun SecondsDisplay(
         val timeLong = (degree / 0.1).toInt()
         val seconds = (timeLong % 3600) / 60
         val minutes = timeLong % 60
-        "$seconds : $minutes"
+        "$seconds:$minutes"
     }
 
-    Row(
-        modifier.padding(top = 20.dp),
-        horizontalArrangement = Arrangement.Center
-    ) {
-        Text(time, fontSize = 60.sp, fontWeight = FontWeight.Bold)
-    }
+    Text(
+        time,
+        fontWeight = FontWeight.Bold,
+        textAlign = TextAlign.Center,
+        fontSize = 42.sp,
+        color = Color.LightGray
+    )
 }
 
 @Preview
 @Composable
 fun SecondsDisplayPreview() {
-    val rowModifier = Modifier
-        .fillMaxWidth()
-        .padding(10.dp)
     MyTheme {
-        SecondsDisplay(30f, false, rowModifier)
+        SecondsDisplay(30f, false)
     }
 }
 
