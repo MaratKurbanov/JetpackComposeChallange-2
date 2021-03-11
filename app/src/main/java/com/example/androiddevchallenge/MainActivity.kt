@@ -20,7 +20,6 @@ import android.media.Ringtone
 import android.media.RingtoneManager
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.AnimatedVisibility
@@ -30,12 +29,13 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.requiredSize
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -149,8 +149,6 @@ fun CountdownTimer() {
                     setIsRingTonePlaying(true)
                     getRingTone(context)?.play()
                 }
-
-                Log.d("Marat", "marat: degree=$degree")
             }
         }
     }
@@ -171,7 +169,8 @@ fun CountdownTimer() {
             modifier = Modifier
                 .fillMaxWidth()
                 .fillMaxHeight()
-                .padding(10.dp)
+                .padding(10.dp),
+            verticalArrangement = Arrangement.Center
         ) {
 
             AnimatedVisibility(visible = isRingRingTonePlaying) {
@@ -291,56 +290,57 @@ fun ClockFaceRowPreview() {
 
 @Composable
 fun ClockFaceRow(degree: Float, modifier: Modifier) {
+    BoxWithConstraints {
+        val withLength = maxWidth.coerceAtMost(maxHeight)
+        Canvas(
+            modifier = modifier.requiredSize(withLength, withLength)
+        ) {
+            val halfCanvasWidth = size.width / 2
+            val halfCanvasHeight = size.height / 2
+            val radius = size.minDimension / 2
 
-    Canvas(
-        modifier = modifier
-            .size(300.dp)
-    ) {
-        val halfCanvasWidth = size.width / 2
-        val halfCanvasHeight = size.height / 2
-        val radius = size.minDimension / 2
-
-        drawCircle(
-            color = Color.Black,
-            center = Offset(x = halfCanvasWidth, y = halfCanvasHeight),
-            radius = radius + 4,
-            style = Stroke(
-                width = 4f,
-            )
-        )
-
-        drawCircle(
-            color = Color.Red,
-            center = Offset(x = halfCanvasWidth, y = halfCanvasHeight),
-            radius = radius,
-        )
-
-        withTransform({
-            rotate(degrees = -90f)
-        }) {
-
-            drawArc(
-                color = Color.Blue,
-                alpha = 0.5f,
-                startAngle = 0f,
-                sweepAngle = degree,
-                useCenter = true,
-            )
-        }
-
-        withTransform({
-            rotate(degrees = degree)
-        }) {
-            inset(50F, 50F) {
-                drawLine(
-                    color = Color.Black,
-                    start = Offset(x = halfCanvasWidth - 50, y = halfCanvasHeight - 50),
-                    end = Offset(
-                        x = halfCanvasWidth - 50,
-                        y = halfCanvasHeight - radius - 50
-                    ),
-                    strokeWidth = 5f,
+            drawCircle(
+                color = Color.Black,
+                center = Offset(x = halfCanvasWidth, y = halfCanvasHeight),
+                radius = radius + 4,
+                style = Stroke(
+                    width = 4f,
                 )
+            )
+
+            drawCircle(
+                color = Color.Red,
+                center = Offset(x = halfCanvasWidth, y = halfCanvasHeight),
+                radius = radius,
+            )
+
+            withTransform({
+                rotate(degrees = -90f)
+            }) {
+
+                drawArc(
+                    color = Color.Blue,
+                    alpha = 0.5f,
+                    startAngle = 0f,
+                    sweepAngle = degree,
+                    useCenter = true,
+                )
+            }
+
+            withTransform({
+                rotate(degrees = degree)
+            }) {
+                inset(50F, 50F) {
+                    drawLine(
+                        color = Color.Black,
+                        start = Offset(x = halfCanvasWidth - 50, y = halfCanvasHeight - 50),
+                        end = Offset(
+                            x = halfCanvasWidth - 50,
+                            y = halfCanvasHeight - radius - 50
+                        ),
+                        strokeWidth = 5f,
+                    )
+                }
             }
         }
     }
@@ -370,7 +370,7 @@ fun UserInputRow(
 
     Row(
         modifier,
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.SpaceEvenly,
     ) {
         val buttonModifier = Modifier
             .padding(5.dp)
@@ -480,7 +480,7 @@ fun ButtonRow(
 
     Row(
         modifier,
-        horizontalArrangement = Arrangement.SpaceBetween
+        horizontalArrangement = Arrangement.SpaceEvenly
     ) {
         Button(onClick = onClick, Modifier.width(100.dp)) {
 
