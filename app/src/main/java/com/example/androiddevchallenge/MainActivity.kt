@@ -56,13 +56,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.inset
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -79,7 +82,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            MyTheme {
+            MyTheme(darkTheme = true) {
                 CountdownTimer()
             }
         }
@@ -296,12 +299,11 @@ fun ClockFaceRow(degree: Float, modifier: Modifier) {
             modifier = modifier.requiredSize(withLength, withLength)
         ) {
             val halfCanvasWidth = size.width / 2
-            val halfCanvasHeight = size.height / 2
             val radius = size.minDimension / 2
 
             drawCircle(
                 color = Color.Black,
-                center = Offset(x = halfCanvasWidth, y = halfCanvasHeight),
+                center = Offset(x = halfCanvasWidth, y = halfCanvasWidth),
                 radius = radius + 4,
                 style = Stroke(
                     width = 4f,
@@ -310,16 +312,25 @@ fun ClockFaceRow(degree: Float, modifier: Modifier) {
 
             drawCircle(
                 color = Color.Red,
-                center = Offset(x = halfCanvasWidth, y = halfCanvasHeight),
+                center = Offset(x = halfCanvasWidth, y = halfCanvasWidth),
                 radius = radius,
+            )
+
+            val countDownBrush = Brush.radialGradient(
+                listOf(
+                    Color.Blue,
+                    Color.Yellow,
+                    Color.Gray,
+                    Color.Cyan,
+                    Color.Blue
+                )
             )
 
             withTransform({
                 rotate(degrees = -90f)
             }) {
-
                 drawArc(
-                    color = Color.Blue,
+                    brush = countDownBrush,
                     alpha = 0.5f,
                     startAngle = 0f,
                     sweepAngle = degree,
@@ -332,13 +343,14 @@ fun ClockFaceRow(degree: Float, modifier: Modifier) {
             }) {
                 inset(50F, 50F) {
                     drawLine(
-                        color = Color.Black,
-                        start = Offset(x = halfCanvasWidth - 50, y = halfCanvasHeight - 50),
+                        brush = countDownBrush,
+                        start = Offset(x = halfCanvasWidth - 50, y = halfCanvasWidth - 50),
                         end = Offset(
                             x = halfCanvasWidth - 50,
-                            y = halfCanvasHeight - radius - 50
+                            y = halfCanvasWidth - radius - 50
                         ),
-                        strokeWidth = 5f,
+                        strokeWidth = 6f,
+                        cap = StrokeCap.Round
                     )
                 }
             }
@@ -456,8 +468,9 @@ fun SecondsDisplay(
     Text(
         time,
         fontWeight = FontWeight.Bold,
+        fontFamily = FontFamily.Serif,
         textAlign = TextAlign.Center,
-        fontSize = 42.sp,
+        fontSize = 50.sp,
         color = Color.LightGray
     )
 }
